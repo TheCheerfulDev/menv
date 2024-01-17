@@ -9,7 +9,7 @@ import (
 
 func TestDefault(t *testing.T) {
 	home, _ := os.UserHomeDir()
-	expected := &Config{
+	expected := Config{
 		MenvRoot: filepath.Join(home, ".config", "menv"),
 		Editor:   "vi",
 	}
@@ -50,11 +50,11 @@ func TestSetGet(t *testing.T) {
 
 func TestInit(t *testing.T) {
 	dir := t.TempDir()
-	cfg := &Config{
+	testCfg := Config{
 		MenvRoot: filepath.Join(dir, ".config", "menv"),
 		Editor:   "vi",
 	}
-	Set(cfg)
+	Set(testCfg)
 
 	err := Init()
 	assert.NoError(t, err)

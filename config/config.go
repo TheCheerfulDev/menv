@@ -10,11 +10,11 @@ type Config struct {
 	Editor   string
 }
 
-var cfg *Config
+var cfg Config
 
-func Default() *Config {
+func Default() Config {
 	home, _ := os.UserHomeDir()
-	return &Config{
+	return Config{
 		MenvRoot: filepath.Join(home, ".config", "menv"),
 		Editor:   "vi",
 	}
@@ -28,11 +28,11 @@ func Editor() string {
 	return cfg.Editor
 }
 
-func Set(config *Config) {
+func Set(config Config) {
 	cfg = config
 }
 
-func Get() *Config {
+func Get() Config {
 	return cfg
 }
 

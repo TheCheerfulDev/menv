@@ -3,20 +3,43 @@ package profiles
 import (
 	"errors"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+	"io"
 	"menv/config"
 	"os"
 	"path/filepath"
 	"testing"
 )
 
+type MockShellCommand struct {
+	*mock.Mock
+}
+
+func (m MockShellCommand) Run() error {
+	args := m.Called()
+	return args.Error(0)
+}
+
+func (m MockShellCommand) Stdin(stdin io.Reader) {
+	m.Called(stdin)
+}
+
+func (m MockShellCommand) Stdout(stdout io.Writer) {
+	m.Called(stdout)
+}
+
+func (m MockShellCommand) Stderr(stderr io.Writer) {
+	m.Called(stderr)
+}
+
 func TestInit(t *testing.T) {
 	dir := t.TempDir()
 	editor := "editor"
-	cfg = &config.Config{
+	testCfg := config.Config{
 		MenvRoot: dir,
 		Editor:   editor,
 	}
-	Init(cfg)
+	Init(testCfg)
 
 	assert.Equal(t, dir, cfg.MenvRoot, "cfg.MenvRoot should be %v, got %v", dir, cfg.MenvRoot)
 	assert.Equal(t, editor, cfg.Editor, "cfg.Editor should be %v, got %v", editor, cfg.Editor)
@@ -47,12 +70,12 @@ func TestProfilesEmpty(t *testing.T) {
 
 func TestProfiles(t *testing.T) {
 	tempDir := t.TempDir()
-	cfg = &config.Config{
+	testCfg := config.Config{
 		MenvRoot: tempDir,
 		Editor:   "vi",
 	}
 
-	Init(cfg)
+	Init(testCfg)
 	_ = Create("test")
 	_ = Create("test2")
 	_ = Create("test3")
@@ -69,9 +92,9 @@ func TestClear(t *testing.T) {
 	_ = os.Chdir(dir)
 	_ = Set(profile)
 
-	assert.FileExists(t, dir+"/.menv_profile", "Profile should be set")
+	assert.FileExists(t, ".menv_profile", "Profile should be set")
 	Clear()
-	assert.NoFileExists(t, dir+"/.menv_profile", "Clear should remove the profile")
+	assert.NoFileExists(t, ".menv_profile", "Clear should remove the profile")
 
 }
 
@@ -183,12 +206,30 @@ func TestActiveNonExistent(t *testing.T) {
 }
 
 func TestEdit(t *testing.T) {
+	TestInit(t)
+	_ = os.Chdir(t.TempDir())
+	_ = Create("test")
+
+	mockShell := MockShellCommand{
+		Mock: &mock.Mock{},
+	}
+
+	mockProvider := func(string, ...string) ShellCommand {
+		return &mockShell
+	}
+
+	mockShell.On("Stdin", os.Stdin).Return()
+	mockShell.On("Stdout", os.Stdout).Return()
+	mockShell.On("Stderr", os.Stderr).Return()
+	mockShell.On("Run").Return(nil)
+	_ = Edit("test", mockProvider)
+	mockShell.AssertExpectations(t)
 
 }
 
 func TestEditNonExistent(t *testing.T) {
 	initTest(t)
-	actual := Edit("non_existent")
+	actual := Edit("non_existent", ExecCmdProvider)
 	expected := errors.New("profile non_existent does not exist")
 
 	assert.Error(t, actual)
@@ -196,12 +237,29 @@ func TestEditNonExistent(t *testing.T) {
 }
 
 func TestEditOpts(t *testing.T) {
-	// TODO
+	TestInit(t)
+	_ = os.Chdir(t.TempDir())
+	_ = Create("test")
+
+	mockShell := MockShellCommand{
+		Mock: &mock.Mock{},
+	}
+
+	mockProvider := func(string, ...string) ShellCommand {
+		return &mockShell
+	}
+
+	mockShell.On("Stdin", os.Stdin).Return()
+	mockShell.On("Stdout", os.Stdout).Return()
+	mockShell.On("Stderr", os.Stderr).Return()
+	mockShell.On("Run").Return(nil)
+	_ = EditOpts("test", mockProvider)
+	mockShell.AssertExpectations(t)
 }
 
 func TestEditOptsNonExistent(t *testing.T) {
 	initTest(t)
-	actual := EditOpts("non_existent")
+	actual := EditOpts("non_existent", nil)
 	expected := errors.New("profile non_existent does not exist").Error()
 
 	assert.EqualError(t, actual, expected)
@@ -249,10 +307,10 @@ func TestOptsFile(t *testing.T) {
 
 func initTest(t *testing.T) {
 	tempDir := t.TempDir()
-	cfg = &config.Config{
+	testConfig := config.Config{
 		MenvRoot: tempDir,
 		Editor:   "vi",
 	}
-	Init(cfg)
+	Init(testConfig)
 	_ = os.Chdir(t.TempDir())
 }

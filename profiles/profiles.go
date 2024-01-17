@@ -3,6 +3,7 @@ package profiles
 import (
 	"errors"
 	"fmt"
+	"io"
 	"menv/config"
 	"os"
 	"os/exec"
@@ -20,7 +21,34 @@ const (
 `
 )
 
-var cfg *config.Config
+var cfg config.Config
+
+type ShellCommand interface {
+	Run() error
+	Stdin(io.Reader)
+	Stdout(io.Writer)
+	Stderr(io.Writer)
+}
+
+type execShellCommand struct {
+	*exec.Cmd
+}
+
+func (e execShellCommand) Run() error {
+	return e.Cmd.Run()
+}
+
+func (e execShellCommand) Stdin(stdin io.Reader) {
+	e.Cmd.Stdin = stdin
+}
+
+func (e execShellCommand) Stdout(stdout io.Writer) {
+	e.Cmd.Stdout = stdout
+}
+
+func (e execShellCommand) Stderr(stderr io.Writer) {
+	e.Cmd.Stderr = stderr
+}
 
 func Create(profile string) error {
 	if Exists(profile) {
@@ -45,8 +73,7 @@ func Profiles() []string {
 }
 
 func Clear() {
-	dir, _ := os.Getwd()
-	_ = os.Remove(dir + "/" + profileFile)
+	_ = os.Remove(profileFile)
 }
 
 func Remove(profile string) error {
@@ -110,40 +137,34 @@ func removeNewLineFromString(input string) string {
 	return input
 }
 
-func Init(config *config.Config) {
+func Init(config config.Config) {
 	cfg = config
 }
 
-func Edit(profile string) error {
-	if !Exists(profile) {
-		return errors.New(fmt.Sprintf("profile %v does not exist", profile))
-	}
-
+func genericEdit(profile string, shell func(string, ...string) ShellCommand, fileFn func(string) string) error {
 	editor := config.Editor()
 
-	cmd := exec.Command(editor, File(profile))
+	cmd := shell(editor, fileFn(profile))
 
-	cmd.Stdin = os.Stdin
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
+	cmd.Stdin(os.Stdin)
+	cmd.Stdout(os.Stdout)
+	cmd.Stderr(os.Stderr)
 	_ = cmd.Run()
 	return nil
 }
 
-func EditOpts(profile string) error {
+func Edit(profile string, shell func(string, ...string) ShellCommand) error {
 	if !Exists(profile) {
 		return errors.New(fmt.Sprintf("profile %v does not exist", profile))
 	}
+	return genericEdit(profile, shell, File)
+}
 
-	editor := config.Editor()
-
-	cmd := exec.Command(editor, OptsFile(profile))
-
-	cmd.Stdin = os.Stdin
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	_ = cmd.Run()
-	return nil
+func EditOpts(profile string, shell func(string, ...string) ShellCommand) error {
+	if !Exists(profile) {
+		return errors.New(fmt.Sprintf("profile %v does not exist", profile))
+	}
+	return genericEdit(profile, shell, OptsFile)
 }
 
 func MvnOptsExists(profile string) bool {
@@ -164,4 +185,10 @@ func File(profile string) string {
 
 func OptsFile(profile string) string {
 	return cfg.MenvRoot + "/" + profile + ".maven_opts"
+}
+
+func ExecCmdProvider(command string, args ...string) ShellCommand {
+	return execShellCommand{
+		exec.Command(command, args...),
+	}
 }

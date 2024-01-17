@@ -36,7 +36,7 @@ export MENV_EDITOR=nano`,
 			return
 		}
 
-		err := profiles.EditOpts(profile)
+		err := profiles.EditOpts(profile, profiles.ExecCmdProvider)
 		if err != nil {
 			fmt.Println(err)
 		}
