@@ -23,7 +23,7 @@ func printProfiles(profileList []string) {
 		return
 	}
 
-	active, _ := profiles.ActiveProfile()
+	active, _ := profiles.Active()
 
 	fmt.Println("Available profiles:")
 	for _, profile := range profileList {

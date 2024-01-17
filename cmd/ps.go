@@ -12,7 +12,7 @@ var psCmd = &cobra.Command{
 	Short: "Show active profile",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		printActiveProfile(profiles.ActiveProfile())
+		printActiveProfile(profiles.Active())
 	},
 }
 

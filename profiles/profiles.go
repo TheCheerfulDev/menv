@@ -50,20 +50,24 @@ func Profiles() []string {
 	return result
 }
 
-func DeleteProfile(name string) error {
+func Clear(path string) {
+	os.Remove(path + "/" + profileFile)
+}
+
+func Delete(profile string) error {
 	return nil
 }
 
-func ActivateProfile(name string) error {
+func Set(profile string) error {
 	return nil
 }
 
-func Exists(name string) bool {
-	_, err := os.Stat(filepath.Join(cfg.MenvRoot, name))
+func Exists(profile string) bool {
+	_, err := os.Stat(filepath.Join(cfg.MenvRoot, profile))
 	return !os.IsNotExist(err)
 }
 
-func ActiveProfile() (string, string) {
+func Active() (string, string) {
 	currentDirectory, err := os.Getwd()
 
 	if err != nil {
@@ -77,7 +81,7 @@ func ActiveProfile() (string, string) {
 
 		profileFilePath := currentDirectory + profileFile
 		if _, err := os.Stat(filepath.Join(currentDirectory, profileFile)); !os.IsNotExist(err) {
-			return ExtractActiveVersionFromFile(profileFilePath), profileFilePath
+			return extractActiveVersionFromFile(profileFilePath), profileFilePath
 		}
 
 		if currentDirectory == "/" {
@@ -89,14 +93,14 @@ func ActiveProfile() (string, string) {
 
 }
 
-func ExtractActiveVersionFromFile(filePath string) (version string) {
+func extractActiveVersionFromFile(filePath string) (version string) {
 	fileContent, _ := os.ReadFile(filePath)
 	version = string(fileContent)
-	version = RemoveNewLineFromString(version)
+	version = removeNewLineFromString(version)
 	return version
 }
 
-func RemoveNewLineFromString(input string) string {
+func removeNewLineFromString(input string) string {
 	input = strings.ReplaceAll(input, "\n", "")
 	input = strings.ReplaceAll(input, "\r", "")
 	return input
