@@ -3,7 +3,7 @@ on:
   push:
     branches:
       # It's important that the action also runs on merge to main
-      - main
+      - master
 
 jobs:
   coverage:
