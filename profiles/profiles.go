@@ -2,8 +2,10 @@ package profiles
 
 import (
 	"errors"
+	"fmt"
 	"menv/config"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 )
@@ -20,12 +22,12 @@ const (
 
 var cfg *config.Config
 
-func Add(name string) error {
-	if Exists(name) {
-		return errors.New("profile already exists")
+func Add(profile string) error {
+	if Exists(profile) {
+		return errors.New(fmt.Sprintf("profile %v already exists", profile))
 	}
 
-	path := cfg.MenvRoot + "/settings.xml." + name
+	path := cfg.MenvRoot + "/settings.xml." + profile
 	err := os.WriteFile(path, []byte(template), 0644)
 
 	if err != nil {
@@ -115,4 +117,23 @@ func removeNewLineFromString(input string) string {
 
 func Init(config *config.Config) {
 	cfg = config
+}
+
+func Edit(profile string) error {
+	if !Exists(profile) {
+		return errors.New(fmt.Sprintf("profile %v does not exist", profile))
+	}
+
+	editor := config.Editor()
+
+	cmd := exec.Command(editor, File(profile))
+
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	_ = cmd.Run()
+	return nil
+}
+func File(profile string) string {
+	return cfg.MenvRoot + "/settings.xml." + profile
 }
