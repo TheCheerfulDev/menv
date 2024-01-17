@@ -28,20 +28,12 @@ func Create(profile string) error {
 	}
 
 	path := cfg.MenvRoot + "/settings.xml." + profile
-	err := os.WriteFile(path, []byte(template), 0644)
-
-	if err != nil {
-		return err
-	}
+	_ = os.WriteFile(path, []byte(template), 0644)
 	return nil
 }
 
 func Profiles() []string {
-	dir, err := os.ReadDir(cfg.MenvRoot)
-
-	if err != nil {
-		return []string{}
-	}
+	dir, _ := os.ReadDir(cfg.MenvRoot)
 
 	result := make([]string, 0)
 	for _, file := range dir {
@@ -53,7 +45,7 @@ func Profiles() []string {
 }
 
 func Clear(path string) {
-	os.Remove(path + "/" + profileFile)
+	_ = os.Remove(path + "/" + profileFile)
 }
 
 func Remove(profile string) error {
@@ -61,8 +53,8 @@ func Remove(profile string) error {
 		return errors.New(fmt.Sprintf("profile %v does not exist", profile))
 	}
 
-	os.Remove(cfg.MenvRoot + "/settings.xml." + profile)
-	os.Remove(cfg.MenvRoot + "/" + profile + ".maven_opts")
+	_ = os.Remove(cfg.MenvRoot + "/settings.xml." + profile)
+	_ = os.Remove(cfg.MenvRoot + "/" + profile + ".maven_opts")
 	return nil
 }
 
@@ -78,20 +70,12 @@ func Set(profile string) error {
 }
 
 func Exists(profile string) bool {
-	if profile == "SYSTEM_DEFAULT" {
-		return true
-	}
-
 	_, err := os.Stat(cfg.MenvRoot + "/settings.xml." + profile)
 	return !os.IsNotExist(err)
 }
 
 func Active() (profile string, path string) {
-	currentDirectory, err := os.Getwd()
-
-	if err != nil {
-		return "", ""
-	}
+	currentDirectory, _ := os.Getwd()
 
 	for {
 		if !strings.HasSuffix(currentDirectory, "/") {
@@ -159,6 +143,19 @@ func EditOpts(profile string) error {
 	cmd.Stderr = os.Stderr
 	_ = cmd.Run()
 	return nil
+}
+
+func MvnOptsExists(profile string) bool {
+	_, err := os.Stat(OptsFile(profile))
+	return !os.IsNotExist(err)
+}
+
+func MvnOpts(profile string) string {
+	data, _ := os.ReadFile(OptsFile(profile))
+	opts := string(data)
+	opts = strings.ReplaceAll(opts, "\n", "")
+	opts = strings.ReplaceAll(opts, "\r", "")
+	return opts
 }
 func File(profile string) string {
 	return cfg.MenvRoot + "/settings.xml." + profile
