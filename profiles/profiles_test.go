@@ -10,51 +10,39 @@ import (
 )
 
 func TestInit(t *testing.T) {
-	dir := "/tmp"
+	dir := t.TempDir()
 	editor := "editor"
 	cfg = &config.Config{
 		MenvRoot: dir,
 		Editor:   editor,
 	}
 	Init(cfg)
-	if cfg.MenvRoot != dir {
-		t.Errorf("cfg.MenvRoot should be /tmp, got %v", cfg.MenvRoot)
-	}
-	if cfg.Editor != editor {
-		t.Errorf("cfg.Editor should be non_default_editor, got %v", cfg.Editor)
-	}
+
+	assert.Equal(t, dir, cfg.MenvRoot, "cfg.MenvRoot should be %v, got %v", dir, cfg.MenvRoot)
+	assert.Equal(t, editor, cfg.Editor, "cfg.Editor should be %v, got %v", editor, cfg.Editor)
 }
 
 func TestCreateNew(t *testing.T) {
 	initTest(t)
 	err := Create("test")
-	if err != nil {
-		t.Errorf("Create should not return an error, got %v", err)
-	}
 
-	if _, err := os.Stat(cfg.MenvRoot + "/settings.xml.test"); os.IsNotExist(err) {
-		t.Errorf("Create should create a profile")
-	}
-
+	assert.NoErrorf(t, err, "Create should not return an error, got %v", err)
+	assert.FileExists(t, cfg.MenvRoot+"/settings.xml.test", "Create should create a profile")
 }
 
 func TestCreateExisting(t *testing.T) {
 	initTest(t)
 	_ = Create("test")
 	err := Create("test")
-	if err == nil {
-		t.Errorf("Create should return an error, got %v", err)
-	}
 
+	assert.Error(t, err, "Creating a duplicate should return an error")
 }
 
 func TestProfilesEmpty(t *testing.T) {
 	initTest(t)
 	profileList := Profiles()
 
-	if len(profileList) != 0 {
-		t.Errorf("Profiles should return an empty list, got %v", profileList)
-	}
+	assert.Empty(t, profileList, "Profiles should return an empty list")
 }
 
 func TestProfiles(t *testing.T) {
@@ -70,22 +58,21 @@ func TestProfiles(t *testing.T) {
 	_ = Create("test3")
 	profileList := Profiles()
 
-	if len(profileList) != 3 {
-		t.Errorf("Profiles should return a slice with 3 items, got %v", profileList)
-	}
+	assert.Len(t, profileList, 3, "Profiles should return a slice with 3 items")
 }
 
 func TestClear(t *testing.T) {
 	initTest(t)
-	profile := "test"
 	dir := t.TempDir()
+	profile := "test"
 	_ = Create(profile)
 	_ = os.Chdir(dir)
 	_ = Set(profile)
-	Clear(profile)
-	if _, err := os.Stat(dir + "/settings.xml.test"); !os.IsNotExist(err) {
-		t.Errorf("Clear should remove the profile")
-	}
+
+	assert.FileExists(t, dir+"/.menv_profile", "Profile should be set")
+	Clear()
+	assert.NoFileExists(t, dir+"/.menv_profile", "Clear should remove the profile")
+
 }
 
 func TestRemove(t *testing.T) {
@@ -101,8 +88,10 @@ func TestRemove(t *testing.T) {
 	_ = Create("existing_profile")
 	for _, test := range tests {
 		err := Remove(test.profile)
-		if err != nil && err.Error() != test.err.Error() {
-			t.Errorf("Remove(%v) should return %v, got %v", test.profile, test.err, err)
+		if test.err != nil {
+			assert.EqualErrorf(t, err, test.err.Error(), "Create(%v) should return %v, got %v", test.profile, test.err, err)
+		} else {
+			assert.NoErrorf(t, err, "Create(%v) should not return an error, got %v", test.profile, err)
 		}
 	}
 }
@@ -110,29 +99,22 @@ func TestRemove(t *testing.T) {
 func TestSetNonExisting(t *testing.T) {
 	initTest(t)
 	err := Set("non_existing")
-	if err == nil {
-		t.Errorf("Set should return an error, got %v", err)
-	}
+	assert.Error(t, err, "Set should return an error")
 }
 
 func TestSet(t *testing.T) {
 	initTest(t)
 	_ = Create("test")
 	err := Set("test")
-	if err != nil {
-		t.Errorf("Set should not return an error, got %v", err)
-	}
+	assert.NoError(t, err, "Set should not return an error")
 }
 
 func TestExists(t *testing.T) {
 	initTest(t)
 	_ = Create("test")
-	if !Exists("test") {
-		t.Errorf("Exists should return true")
-	}
-	if Exists("non_existing") {
-		t.Errorf("Exists should return false")
-	}
+
+	assert.True(t, Exists("test"), "Exists should return true")
+	assert.False(t, Exists("non_existing"), "Exists should return false")
 }
 
 func TestActiveSameDir(t *testing.T) {
@@ -154,42 +136,36 @@ func TestActiveSameDir(t *testing.T) {
 	for _, test := range tests {
 		_ = test.fn(test.profile)
 		profile, path := Active()
-		if profile != test.profile {
-			t.Errorf("Active should return %v, got %v", test.profile, profile)
-		}
-		if path != test.want {
-			t.Errorf("Active should return %v, got %v", test.want, path)
-		}
+
+		assert.Equalf(t, test.profile, profile, "Active should return %v, got %v", test.profile, profile)
+		assert.Equalf(t, test.want, path, "Active should return %v, got %v", test.want, path)
 	}
 }
 
 func TestActiveParentDir(t *testing.T) {
 	initTest(t)
 	dir, _ := os.Getwd()
-
 	parent := filepath.Dir(dir)
 
-	_ = Create("test")
+	expectedProfile := "test"
+	_ = Create(expectedProfile)
 	_ = os.Chdir(parent)
-	_ = Set("test")
+	_ = Set(expectedProfile)
 	_ = os.Chdir(dir)
 	profile, path := Active()
-	if profile != "test" {
-		t.Errorf("Active should return test, got %v", profile)
-	}
-	if path != parent+"/"+profileFile {
-		t.Errorf("Active should return %v, got %v", parent+"/"+profileFile, path)
-	}
+
+	assert.Equalf(t, expectedProfile, profile, "Active should return %v, got %v", expectedProfile, profile)
+	assert.Equalf(t, parent+"/"+profileFile, path, "Active should return %v, got %v", parent+"/"+profileFile, path)
 }
 
 func TestExtractActiveVersionFromFile(t *testing.T) {
 	initTest(t)
-	_ = Create("test")
-	_ = Set("test")
-	profile, _ := Active()
-	if profile != "test" {
-		t.Errorf("Active should return test, got %v", profile)
-	}
+	expected := "test"
+	_ = Create(expected)
+	_ = Set(expected)
+	actual, _ := Active()
+
+	assert.Equal(t, expected, actual, "Active should return %v, got %v", expected, actual)
 }
 
 func TestRemoveNewLineFromString(t *testing.T) {
@@ -243,37 +219,32 @@ func TestMvnOptsExists(t *testing.T) {
 	_ = Create("existing_profile")
 	_ = os.WriteFile(cfg.MenvRoot+"/existing_profile.maven_opts", []byte("test"), 0644)
 	for _, test := range tests {
-		got := MvnOptsExists(test.profile)
-		if got != test.exists {
-			t.Errorf("MvnOptsExists(%v) should return %v, got %v", test.profile, test.exists, got)
-		}
+		actual := MvnOptsExists(test.profile)
+		assert.Equalf(t, test.exists, actual, "MvnOptsExists(%v) should return %v, actual %v", test.profile, test.exists, actual)
 	}
 }
 
 func TestMvnOpts(t *testing.T) {
 	initTest(t)
-	_ = Create("test")
-	_ = os.WriteFile(cfg.MenvRoot+"/test.maven_opts", []byte("test"), 0644)
-	opts := MvnOpts("test")
-	if opts != "test" {
-		t.Errorf("MvnOpts should return test, got %v", opts)
-	}
+	expected := "test"
+	_ = Create(expected)
+	_ = os.WriteFile(cfg.MenvRoot+"/test.maven_opts", []byte(expected), 0644)
+	opts := MvnOpts(expected)
+	assert.Equalf(t, expected, opts, "MvnOpts(%v) should return %v, got %v", expected, expected, opts)
 }
 
 func TestFile(t *testing.T) {
 	initTest(t)
-	file := File("test")
-	if file != cfg.MenvRoot+"/settings.xml.test" {
-		t.Errorf("File should return %v, got %v", cfg.MenvRoot+"/settings.xml.test", file)
-	}
+	actual := File("test")
+
+	assert.Equalf(t, cfg.MenvRoot+"/settings.xml.test", actual, "File should return %v, got %v", cfg.MenvRoot+"/settings.xml.test", actual)
 }
 
 func TestOptsFile(t *testing.T) {
 	initTest(t)
-	file := OptsFile("test")
-	if file != cfg.MenvRoot+"/test.maven_opts" {
-		t.Errorf("File should return %v, got %v", cfg.MenvRoot+"/test.maven_opts", file)
-	}
+	actual := OptsFile("test")
+
+	assert.Equalf(t, cfg.MenvRoot+"/test.maven_opts", actual, "OptsFile should return %v, got %v", cfg.MenvRoot+"/test.maven_opts", actual)
 }
 
 func initTest(t *testing.T) {

@@ -9,6 +9,7 @@ import (
 // psCmd represents the ps command
 var psCmd = &cobra.Command{
 	Use:   "ps",
+	Args:  cobra.NoArgs,
 	Short: "Show active profile",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
@@ -20,7 +21,7 @@ func printActiveProfile(profile string, path string) {
 	fmt.Println("Active profile: ")
 
 	if profile == "" {
-		fmt.Println("none")
+		fmt.Println("  none (default)")
 		return
 	}
 

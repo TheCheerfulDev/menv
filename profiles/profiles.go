@@ -44,8 +44,9 @@ func Profiles() []string {
 	return result
 }
 
-func Clear(path string) {
-	_ = os.Remove(path + "/" + profileFile)
+func Clear() {
+	dir, _ := os.Getwd()
+	_ = os.Remove(dir + "/" + profileFile)
 }
 
 func Remove(profile string) error {

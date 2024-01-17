@@ -71,7 +71,7 @@ func findMvnExecutable() (string, error) {
 
 	mvn := ""
 
-	filepath.WalkDir(cellar, func(path string, d fs.DirEntry, err error) error {
+	_ = filepath.WalkDir(cellar, func(path string, d fs.DirEntry, err error) error {
 		if !d.IsDir() && d.Name() == "mvn" && !strings.Contains(path, "libexec") {
 			mvn = path
 			return nil
@@ -91,10 +91,10 @@ func setMavenOpts(profile string) string {
 	if profiles.Exists(profile) && profiles.MvnOptsExists(profile) {
 		opts := profiles.MvnOpts(profile)
 		if opts == "" {
-			os.Unsetenv("MAVEN_OPTS")
+			_ = os.Unsetenv("MAVEN_OPTS")
 			return opts
 		}
-		os.Setenv("MAVEN_OPTS", opts)
+		_ = os.Setenv("MAVEN_OPTS", opts)
 		return opts
 	}
 
