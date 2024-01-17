@@ -56,7 +56,13 @@ func Clear(path string) {
 	os.Remove(path + "/" + profileFile)
 }
 
-func Delete(profile string) error {
+func Remove(profile string) error {
+	if !Exists(profile) {
+		return errors.New(fmt.Sprintf("profile %v does not exist", profile))
+	}
+
+	os.Remove(cfg.MenvRoot + "/settings.xml." + profile)
+	os.Remove(cfg.MenvRoot + "/" + profile + ".maven_opts")
 	return nil
 }
 

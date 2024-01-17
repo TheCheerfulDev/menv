@@ -10,7 +10,7 @@ import (
 
 // setCmd represents the set command
 var setCmd = &cobra.Command{
-	Use:   "set",
+	Use:   "set [profile]",
 	Args:  cobra.MaximumNArgs(1),
 	Short: "Set given profile as active profile for this folder and children. If no profile is given, you will be prompted to select one",
 	Long:  ``,
