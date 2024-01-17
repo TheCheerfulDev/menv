@@ -59,11 +59,18 @@ func Delete(profile string) error {
 }
 
 func Set(profile string) error {
+	if !Exists(profile) {
+		return errors.New("profile does not exist")
+	}
+	err := os.WriteFile(profileFile, []byte(profile+"\n"), 0644)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
 func Exists(profile string) bool {
-	_, err := os.Stat(filepath.Join(cfg.MenvRoot, profile))
+	_, err := os.Stat(cfg.MenvRoot + "/settings.xml." + profile)
 	return !os.IsNotExist(err)
 }
 
