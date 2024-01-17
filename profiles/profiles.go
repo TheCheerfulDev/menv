@@ -72,11 +72,15 @@ func Set(profile string) error {
 }
 
 func Exists(profile string) bool {
+	if profile == "SYSTEM_DEFAULT" {
+		return true
+	}
+
 	_, err := os.Stat(cfg.MenvRoot + "/settings.xml." + profile)
 	return !os.IsNotExist(err)
 }
 
-func Active() (string, string) {
+func Active() (profile string, path string) {
 	currentDirectory, err := os.Getwd()
 
 	if err != nil {
@@ -134,6 +138,26 @@ func Edit(profile string) error {
 	_ = cmd.Run()
 	return nil
 }
+
+func EditOpts(profile string) error {
+	if !Exists(profile) {
+		return errors.New(fmt.Sprintf("profile %v does not exist", profile))
+	}
+
+	editor := config.Editor()
+
+	cmd := exec.Command(editor, OptsFile(profile))
+
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	_ = cmd.Run()
+	return nil
+}
 func File(profile string) string {
 	return cfg.MenvRoot + "/settings.xml." + profile
+}
+
+func OptsFile(profile string) string {
+	return cfg.MenvRoot + "/" + profile + ".maven_opts"
 }

@@ -7,11 +7,13 @@ import (
 )
 
 // editCmd represents the edit command
-var editCmd = &cobra.Command{
-	Use:   "edit [profile]",
+var editoptsCmd = &cobra.Command{
+	Use:   "editopts [profile]",
 	Args:  cobra.MaximumNArgs(1),
-	Short: "Edit the provided profile, or the active profile if none is provided, or prompt for a profile if none is active",
-	Long: `With this command you can edit a profile. By default it will open the profile in vi.
+	Short: "Edit MAVEN_OPTS of the provided profile, or the active profile if none is provided, or prompt for a profile if none is active",
+	Long: `With this command you can edit the MAVEN_OPTS of a profile. By default it will open the profile in vi.
+
+If the profile has no MAVEN_OPTS set, maven will use the MAVEN_OPTS from the environment.
 
 You can change the editor by setting the MENV_EDITOR environment variable.
 
@@ -34,7 +36,7 @@ export MENV_EDITOR=nano`,
 			return
 		}
 
-		err := profiles.Edit(profile)
+		err := profiles.EditOpts(profile)
 		if err != nil {
 			fmt.Println(err)
 		}
@@ -42,5 +44,5 @@ export MENV_EDITOR=nano`,
 }
 
 func init() {
-	rootCmd.AddCommand(editCmd)
+	rootCmd.AddCommand(editoptsCmd)
 }

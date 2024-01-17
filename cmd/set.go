@@ -17,7 +17,7 @@ var setCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 
 		if len(args) == 0 {
-			profile := promptForProfile()
+			profile := PromptForProfile()
 			if profile == "" {
 				return
 			}
@@ -39,7 +39,7 @@ func setProfile(profile string) {
 	return
 }
 
-func promptForProfile() string {
+func PromptForProfile() string {
 
 	profileList := profiles.Profiles()
 
