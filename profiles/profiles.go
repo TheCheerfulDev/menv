@@ -22,7 +22,7 @@ const (
 
 var cfg *config.Config
 
-func Add(profile string) error {
+func Create(profile string) error {
 	if Exists(profile) {
 		return errors.New(fmt.Sprintf("profile %v already exists", profile))
 	}
