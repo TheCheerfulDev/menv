@@ -5,6 +5,10 @@ on:
       # It's important that the action also runs on merge to main
       - master
 
+permissions:
+  content: write
+  package: write
+
 jobs:
   coverage:
     runs-on: ubuntu-latest
@@ -28,3 +32,5 @@ jobs:
           ignore-pattern: |
             \.pb\.go$
             \_string\.go$
+          
+          token: ${{ secrets.GITHUB_TOKEN }}
