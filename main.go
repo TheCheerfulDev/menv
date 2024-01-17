@@ -1,11 +1,14 @@
-/*
-Copyright © 2024 NAME HERE <EMAIL ADDRESS>
-
-*/
 package main
 
-import "menv/cmd"
+import (
+	"menv/cmd"
+	"menv/config"
+	"menv/profiles"
+)
 
 func main() {
+	config.Set(config.Default())
+	config.Init()
+	profiles.Init(config.Get())
 	cmd.Execute()
 }
