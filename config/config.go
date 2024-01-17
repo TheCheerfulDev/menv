@@ -1,7 +1,6 @@
 package config
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 )
@@ -37,11 +36,6 @@ func Get() *Config {
 	return cfg
 }
 
-func Init() {
-	err := os.MkdirAll(cfg.MenvRoot, 0755)
-	if err != nil {
-		fmt.Println("Could not create config dir")
-		os.Exit(1)
-	}
-
+func Init() error {
+	return os.MkdirAll(cfg.MenvRoot, 0755)
 }

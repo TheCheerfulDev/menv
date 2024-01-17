@@ -2,6 +2,7 @@ package profiles
 
 import (
 	"errors"
+	"github.com/stretchr/testify/assert"
 	"menv/config"
 	"os"
 	"path/filepath"
@@ -193,29 +194,41 @@ func TestExtractActiveVersionFromFile(t *testing.T) {
 
 func TestRemoveNewLineFromString(t *testing.T) {
 	input := "test\n\r"
-	output := removeNewLineFromString(input)
-	if output != "test" {
-		t.Errorf("removeNewLineFromString should return test, got %v", output)
-	}
+	actual := removeNewLineFromString(input)
+	expected := "test"
+	assert.Equal(t, expected, actual, "removeNewLineFromString should return %v, got %v", expected, actual)
 }
 
 func TestActiveNonExistent(t *testing.T) {
 	initTest(t)
 	profile, path := Active()
-	if profile != "" {
-		t.Errorf("Active should return empty string, got %v", profile)
-	}
-	if path != "" {
-		t.Errorf("Active should return empty string, got %v", path)
-	}
+	assert.Empty(t, profile, "Active should return empty profile")
+	assert.Empty(t, path, "Active should return empty path")
 }
 
 func TestEdit(t *testing.T) {
-	// TODO
+
+}
+
+func TestEditNonExistent(t *testing.T) {
+	initTest(t)
+	actual := Edit("non_existent")
+	expected := errors.New("profile non_existent does not exist")
+
+	assert.Error(t, actual)
+	assert.Equal(t, actual, expected)
 }
 
 func TestEditOpts(t *testing.T) {
 	// TODO
+}
+
+func TestEditOptsNonExistent(t *testing.T) {
+	initTest(t)
+	actual := EditOpts("non_existent")
+	expected := errors.New("profile non_existent does not exist").Error()
+
+	assert.EqualError(t, actual, expected)
 }
 
 func TestMvnOptsExists(t *testing.T) {

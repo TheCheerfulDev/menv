@@ -8,7 +8,7 @@ import (
 
 func main() {
 	config.Set(config.Default())
-	config.Init()
+	_ = config.Init()
 	profiles.Init(config.Get())
 	cmd.Execute()
 }
