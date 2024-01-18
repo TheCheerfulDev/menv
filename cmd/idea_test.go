@@ -66,11 +66,6 @@ func TestIsProfileAlreadySet(t *testing.T) {
         <option name="userSettingsFile" value="$USER_HOME$/.config/menv/settings.xml.test" />
       </MavenGeneralSettings>
     </option>
-    <option name="enabledProfiles">
-      <list>
-        <option value="release" />
-      </list>
-    </option>
   </component>`
 	tempDir := t.TempDir()
 	_ = os.Chdir(tempDir)
@@ -87,11 +82,6 @@ func TestIsMavenPropertyAlreadySet(t *testing.T) {
 	  <MavenGeneralSettings>
 		<option name="userSettingsFile" value="$USER_HOME$/.config/menv/settings.xml.test" />
 	  </MavenGeneralSettings>
-	</option>
-	<option name="enabledProfiles">
-	  <list>
-		<option value="release" />
-	  </list>
 	</option>
   </component>`
 	tempDir := t.TempDir()
@@ -136,11 +126,6 @@ func TestHandleMavenPropertyAlreadySet(t *testing.T) {
 		<option name="userSettingsFile" value="/other/path/.config/menv/settings.xml.test" />
 	  </MavenGeneralSettings>
 	</option>
-	<option name="enabledProfiles">
-	  <list>
-		<option value="release" />
-	  </list>
-	</option>
   </component>`
 
 	configDir := t.TempDir()
@@ -172,11 +157,6 @@ func TestHandleMavenPropertyAlreadySetByMenv(t *testing.T) {
 	  <MavenGeneralSettings>
 		<option name="userSettingsFile" value="{{menv_home}}/settings.xml.test" />
 	  </MavenGeneralSettings>
-	</option>
-	<option name="enabledProfiles">
-	  <list>
-		<option value="release" />
-	  </list>
 	</option>
   </component>`
 	configDir := t.TempDir()

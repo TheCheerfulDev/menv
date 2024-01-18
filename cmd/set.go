@@ -10,10 +10,11 @@ import (
 
 // setCmd represents the set command
 var setCmd = &cobra.Command{
-	Use:   "set [profile]",
-	Args:  cobra.MaximumNArgs(1),
-	Short: "Set given profile as active profile for this folder and children. If no profile is given, you will be prompted to select one",
-	Long:  ``,
+	Use:     "set [profile]",
+	Args:    cobra.MaximumNArgs(1),
+	Aliases: []string{"profile"},
+	Short:   "Set given profile as active profile for this folder and children.",
+	Long:    `Set given profile as active profile for this folder and children. If no profile is given, you will be prompted to select one`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
 			profile := PromptForProfile()

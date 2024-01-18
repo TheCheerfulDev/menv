@@ -12,7 +12,11 @@ var mvnlocalCmd = &cobra.Command{
 	Use:   "mvnlocal",
 	Args:  cobra.NoArgs,
 	Short: "Override current maven project/.mvn folder to the active profile settings",
-	Long:  ``,
+	Long: `This command will copy the active profile settings to .mvn/maven.config and MAVEN_OPTS to .mvn/jvm.config.
+
+If .mvn/jvm.config already exists, but the active profile doesn't have any MAVEN_OPTS set, .mvn/jvm.config remain unmodified.
+
+NOTE: This will override any existing settings in .mvn/maven.config and .mvn/jvm.config.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if IsNotMavenProject() {
 			fmt.Println("Not a maven project or maven project root")
@@ -46,7 +50,7 @@ func writeMavenOpts(file string) {
 }
 
 func writeMavenConfig(file string) {
-	_ = os.WriteFile(".mvn/maven.config", []byte("--settings "+file), 0644)
+	_ = os.WriteFile(".mvn/maven.config", []byte("--settings\n"+file), 0644)
 }
 
 func createMavenDir() {

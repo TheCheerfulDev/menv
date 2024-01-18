@@ -18,11 +18,6 @@ const workspaceTemplate = `<?xml version="1.0" encoding="UTF-8"?>
         <option name="userSettingsFile" value="{{profile}}" />
       </MavenGeneralSettings>
     </option>
-    <option name="enabledProfiles">
-      <list>
-        <option value="release" />
-      </list>
-    </option>
   </component>
 </project>
 `
@@ -33,11 +28,6 @@ const componentTemplate = `  <component name="MavenImportPreferences">
         <option name="userSettingsFile" value="{{menv_home}}/settings.xml.{{profile}}" />
       </MavenGeneralSettings>
     </option>
-    <option name="enabledProfiles">
-      <list>
-        <option value="release" />
-      </list>
-    </option>
   </component>
 </project>`
 
@@ -46,7 +36,7 @@ var ideaCmd = &cobra.Command{
 	Use:   "idea",
 	Args:  cobra.NoArgs,
 	Short: "Override IntelliJ IDEA maven settings.xml to the active profile one.",
-	Long:  ``,
+	Long:  `This command will override the IntelliJ IDEA maven settings.xml to the active profile one.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if IsNotMavenProject() {
 			fmt.Println("Not a maven project or maven project root")
@@ -110,8 +100,8 @@ func handleMavenPropertyAlreadySet(profile string) {
 	}
 
 	instructions := `The IntelliJ workspace already has some custom settings.
-Please override the maven 'User setting file:' property manually
-in IntelliJ to the following value:
+	Please override the maven 'User setting file:' property manually
+	in IntelliJ to the following value:
 
 	{{menv_home}}/settings.xml.${profile}
 

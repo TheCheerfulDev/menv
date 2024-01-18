@@ -10,7 +10,7 @@ import (
 var editCmd = &cobra.Command{
 	Use:   "edit [profile]",
 	Args:  cobra.MaximumNArgs(1),
-	Short: "Edit the provided profile, or the active profile if none is provided, or prompt for a profile if none is active",
+	Short: "Edit settings.xml for the provided profile, or the active profile if none is provided, or prompt for a profile if none is active",
 	Long: `With this command you can edit a profile. By default it will open the profile in vi.
 
 You can change the editor by setting the MENV_EDITOR environment variable.

@@ -10,7 +10,7 @@ import (
 var lsCmd = &cobra.Command{
 	Use:   "ls",
 	Short: "List all available profiles",
-	Long:  ``,
+	Long:  `This command lists all available profiles.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		profiles := profiles.Profiles()
 		printProfiles(profiles)

@@ -34,7 +34,7 @@ func TestWriteMavenConfig(t *testing.T) {
 	writeMavenConfig(profiles.File(profile))
 	file, _ := os.ReadFile(".mvn/maven.config")
 	actualConfig := string(file)
-	expectedConfig := "--settings " + profiles.File(profile)
+	expectedConfig := "--settings\n" + profiles.File(profile)
 	assert.Equal(t, expectedConfig, actualConfig, "maven.config should be equal")
 }
 
