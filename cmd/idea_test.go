@@ -12,16 +12,16 @@ import (
 
 func TestIsNotMavenProject(t *testing.T) {
 	_ = os.Chdir(t.TempDir())
-	assert.True(t, isNotMavenProject())
+	assert.True(t, IsNotMavenProject())
 	_ = os.WriteFile("pom.xml", []byte("test"), 0644)
-	assert.False(t, isNotMavenProject())
+	assert.False(t, IsNotMavenProject())
 }
 
 func TestIsNotIntellijProject(t *testing.T) {
 	_ = os.Chdir(t.TempDir())
-	assert.True(t, isNotIntellijProject())
+	assert.True(t, IsNotIntellijProject())
 	_ = os.Mkdir(".idea", 0755)
-	assert.False(t, isNotIntellijProject())
+	assert.False(t, IsNotIntellijProject())
 }
 
 func TestWorkspaceExists(t *testing.T) {

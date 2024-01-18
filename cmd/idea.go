@@ -48,12 +48,12 @@ var ideaCmd = &cobra.Command{
 	Short: "Override IntelliJ IDEA maven settings.xml to the active profile one.",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		if isNotMavenProject() {
+		if IsNotMavenProject() {
 			fmt.Println("Not a maven project or maven project root")
 			return
 		}
 
-		if isNotIntellijProject() {
+		if IsNotIntellijProject() {
 			fmt.Println("Not an IntelliJ project")
 			return
 		}
@@ -147,12 +147,12 @@ func isMavenPropertyAlreadySet() bool {
 	return strings.Contains(workspace, "MavenImportPreferences")
 }
 
-func isNotMavenProject() bool {
+func IsNotMavenProject() bool {
 	_, err := os.Stat("pom.xml")
 	return os.IsNotExist(err)
 }
 
-func isNotIntellijProject() bool {
+func IsNotIntellijProject() bool {
 	_, err := os.Stat(".idea")
 	return os.IsNotExist(err)
 }
