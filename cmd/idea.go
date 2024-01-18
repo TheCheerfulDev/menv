@@ -35,7 +35,7 @@ const componentTemplate = `  <component name="MavenImportPreferences">
 var ideaCmd = &cobra.Command{
 	Use:   "idea",
 	Args:  cobra.NoArgs,
-	Short: "Override IntelliJ IDEA maven settings.xml to the active profile one.",
+	Short: "Override IntelliJ IDEA maven settings.xml to the active profile one",
 	Long:  `This command will override the IntelliJ IDEA maven settings.xml to the active profile one.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if IsNotMavenProject() {
