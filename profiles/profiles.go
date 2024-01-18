@@ -28,6 +28,7 @@ type ShellCommand interface {
 	Stdin(io.Reader)
 	Stdout(io.Writer)
 	Stderr(io.Writer)
+	Output() ([]byte, error)
 }
 
 type execShellCommand struct {
@@ -48,6 +49,10 @@ func (e execShellCommand) Stdout(stdout io.Writer) {
 
 func (e execShellCommand) Stderr(stderr io.Writer) {
 	e.Cmd.Stderr = stderr
+}
+
+func (e execShellCommand) Output() ([]byte, error) {
+	return e.Cmd.Output()
 }
 
 func Create(profile string) error {

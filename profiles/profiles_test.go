@@ -32,6 +32,10 @@ func (m MockShellCommand) Stderr(stderr io.Writer) {
 	m.Called(stderr)
 }
 
+func (m MockShellCommand) Output() ([]byte, error) {
+	return nil, nil
+}
+
 func TestInit(t *testing.T) {
 	dir := t.TempDir()
 	editor := "editor"

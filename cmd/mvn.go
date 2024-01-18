@@ -7,7 +7,6 @@ import (
 	"io/fs"
 	"menv/profiles"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
 )
@@ -25,11 +24,11 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		execMvn(args)
+		execMvn(args, profiles.ExecCmdProvider)
 	},
 }
 
-func execMvn(args []string) {
+func execMvn(args []string, shell func(string, ...string) profiles.ShellCommand) {
 	mvnArgs := make([]string, 0)
 	profile, _ := profiles.Active()
 	opts := setMavenOpts(profile)
@@ -41,25 +40,25 @@ func execMvn(args []string) {
 		mvnArgs = args
 	}
 
-	mvn, err := findMvnExecutable()
+	mvn, err := findMaven(shell)
 
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 	fmt.Printf("[INFO] MAVEN_OPTS: %v\n", opts)
-	cmd := exec.Command(mvn, mvnArgs...)
+	cmd := shell(mvn, mvnArgs...)
 
-	cmd.Stdin = os.Stdin
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
+	cmd.Stdin(os.Stdin)
+	cmd.Stdout(os.Stdout)
+	cmd.Stderr(os.Stderr)
 	_ = cmd.Run()
 }
 
-func findMvnExecutable() (string, error) {
+func findMaven(shell func(string, ...string) profiles.ShellCommand) (string, error) {
 
 	// look for mvn in homebrew
-	cmd, _ := exec.Command("brew", "--cellar").Output()
+	cmd, _ := shell("brew", "--cellar").Output()
 	cellar := string(cmd)
 	cellar = strings.ReplaceAll(cellar, "\n", "")
 	cellar = strings.ReplaceAll(cellar, "\r", "")
