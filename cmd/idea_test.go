@@ -128,3 +128,134 @@ func TestIsMenvProperty(t *testing.T) {
 
 	assert.True(t, isMenvProperty(), "menv property should be set")
 }
+
+func TestHandleMavenPropertyAlreadySet(t *testing.T) {
+	template := `<component name="MavenImportPreferences">
+	<option name="generalSettings">
+	  <MavenGeneralSettings>
+		<option name="userSettingsFile" value="/other/path/.config/menv/settings.xml.test" />
+	  </MavenGeneralSettings>
+	</option>
+	<option name="enabledProfiles">
+	  <list>
+		<option value="release" />
+	  </list>
+	</option>
+  </component>`
+
+	configDir := t.TempDir()
+
+	testCfg := config.Config{
+		MenvRoot: configDir,
+		Editor:   "vi",
+	}
+	config.Set(testCfg)
+	profiles.Init(testCfg)
+
+	tempDir := t.TempDir()
+	_ = os.Chdir(tempDir)
+	_ = os.Mkdir(".idea", 0755)
+	_ = os.WriteFile(filepath.Join(tempDir, ".idea", "workspace.xml"), []byte(template), 0644)
+
+	handleMavenPropertyAlreadySet("new_profile")
+
+	file, _ := os.ReadFile(filepath.Join(tempDir, ".idea", "workspace.xml"))
+	actual := string(file)
+	expected := template
+
+	assert.Equal(t, expected, actual, "workspace template should be equal")
+}
+
+func TestHandleMavenPropertyAlreadySetByMenv(t *testing.T) {
+	template := `<component name="MavenImportPreferences">
+	<option name="generalSettings">
+	  <MavenGeneralSettings>
+		<option name="userSettingsFile" value="{{menv_home}}/settings.xml.test" />
+	  </MavenGeneralSettings>
+	</option>
+	<option name="enabledProfiles">
+	  <list>
+		<option value="release" />
+	  </list>
+	</option>
+  </component>`
+	configDir := t.TempDir()
+	testCfg := config.Config{
+		MenvRoot: configDir,
+		Editor:   "vi",
+	}
+	config.Set(testCfg)
+	profiles.Init(testCfg)
+
+	tempDir := t.TempDir()
+	_ = os.Chdir(tempDir)
+	_ = os.Mkdir(".idea", 0755)
+	input := strings.Replace(template, "{{menv_home}}", configDir, 1)
+	_ = os.WriteFile(filepath.Join(tempDir, ".idea", "workspace.xml"), []byte(input), 0644)
+
+	handleMavenPropertyAlreadySet("new_profile")
+
+	file, _ := os.ReadFile(filepath.Join(tempDir, ".idea", "workspace.xml"))
+	actual := string(file)
+	expected := strings.Replace(template, "{{menv_home}}", configDir, 1)
+	expected = strings.Replace(expected, "settings.xml.test", "settings.xml.new_profile", 1)
+	assert.Equalf(t, expected, actual, "workspace template should be equal")
+
+}
+
+func TestReplaceExistingMenvProperty(t *testing.T) {
+	configDir := t.TempDir()
+
+	testCfg := config.Config{
+		MenvRoot: configDir,
+		Editor:   "vi",
+	}
+	config.Set(testCfg)
+	profiles.Init(testCfg)
+
+	_ = profiles.Create("test")
+
+	template := strings.Replace(workspaceTemplate, "{{profile}}", profiles.File("test"), 1)
+
+	tempDir := t.TempDir()
+	_ = os.Chdir(tempDir)
+	_ = os.Mkdir(".idea", 0755)
+	_ = os.WriteFile(filepath.Join(tempDir, ".idea", "workspace.xml"), []byte(template), 0644)
+
+	replaceExistingMenvProfile("new_profile")
+
+	actual, _ := os.ReadFile(filepath.Join(tempDir, ".idea", "workspace.xml"))
+	expected := strings.Replace(template, "settings.xml.test", "settings.xml.new_profile", 1)
+
+	assert.Equal(t, expected, string(actual), "workspace template should be equal")
+}
+
+func TestHandleMavenPropertyNotSet(t *testing.T) {
+	emptyTemplate := `<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+</project>
+`
+	configDir := t.TempDir()
+
+	testCfg := config.Config{
+		MenvRoot: configDir,
+		Editor:   "vi",
+	}
+	config.Set(testCfg)
+	profiles.Init(testCfg)
+
+	profile := "test"
+	_ = profiles.Create(profile)
+
+	tempDir := t.TempDir()
+	_ = os.Chdir(tempDir)
+	_ = os.Mkdir(".idea", 0755)
+	_ = os.WriteFile(filepath.Join(tempDir, ".idea", "workspace.xml"), []byte(emptyTemplate), 0644)
+
+	handleMavenPropertyNotSet(profile)
+
+	actual, _ := os.ReadFile(filepath.Join(tempDir, ".idea", "workspace.xml"))
+	expected := strings.Replace(workspaceTemplate, "{{profile}}", profiles.File(profile), 1)
+
+	assert.Equal(t, expected, string(actual), "workspace emptyTemplate should be equal")
+}

@@ -6,12 +6,13 @@ import (
 	"menv/config"
 	"menv/profiles"
 	"os"
+	"regexp"
 	"strings"
 )
 
 const workspaceTemplate = `<?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-<component name="MavenImportPreferences">
+  <component name="MavenImportPreferences">
     <option name="generalSettings">
       <MavenGeneralSettings>
         <option name="userSettingsFile" value="{{profile}}" />
@@ -25,6 +26,20 @@ const workspaceTemplate = `<?xml version="1.0" encoding="UTF-8"?>
   </component>
 </project>
 `
+
+const componentTemplate = `  <component name="MavenImportPreferences">
+    <option name="generalSettings">
+      <MavenGeneralSettings>
+        <option name="userSettingsFile" value="{{menv_home}}/settings.xml.{{profile}}" />
+      </MavenGeneralSettings>
+    </option>
+    <option name="enabledProfiles">
+      <list>
+        <option value="release" />
+      </list>
+    </option>
+  </component>
+</project>`
 
 // ideaCmd represents the idea command
 var ideaCmd = &cobra.Command{
@@ -52,6 +67,7 @@ var ideaCmd = &cobra.Command{
 		if !workspaceExists() {
 			// inject template
 			_ = writeWorkspaceTemplate(profile)
+			fmt.Printf("Maven settings set to profile %v\n", profile)
 			return
 		}
 
@@ -65,15 +81,58 @@ var ideaCmd = &cobra.Command{
 			return
 		}
 
+		handleMavenPropertyNotSet(profile)
+
 	},
+}
+
+func handleMavenPropertyNotSet(profile string) {
+	// get current workspace.xml
+	currFile, _ := os.ReadFile(".idea/workspace.xml")
+	currWorkspace := string(currFile)
+
+	// replace current workspace.xml with new profile
+	exp := regexp.MustCompile("</project>")
+	newWorkspace := exp.ReplaceAllString(currWorkspace, componentTemplate)
+	newWorkspace = strings.ReplaceAll(newWorkspace, "{{menv_home}}", config.Get().MenvRoot)
+	newWorkspace = strings.ReplaceAll(newWorkspace, "{{profile}}", profile)
+
+	// write new workspace.xml
+	_ = os.WriteFile(".idea/workspace.xml", []byte(newWorkspace), 0644)
 }
 
 func handleMavenPropertyAlreadySet(profile string) {
 	// menv set, but not same profile
 	if isMenvProperty() {
-		// replace profile with current
-
+		replaceExistingMenvProfile(profile) // replace profile with current
+		fmt.Printf("Maven settings set to profile %v\n", profile)
+		return
 	}
+
+	instructions := `The IntelliJ workspace already has some custom settings.
+Please override the maven 'User setting file:' property manually
+in IntelliJ to the following value:
+
+	{{menv_home}}/settings.xml.${profile}
+
+`
+	instructions = strings.ReplaceAll(instructions, "{{menv_home}}", config.Get().MenvRoot)
+	fmt.Print(instructions)
+}
+
+func replaceExistingMenvProfile(profile string) {
+
+	// get current workspace.xml
+	currFile, _ := os.ReadFile(".idea/workspace.xml")
+	currWorkspace := string(currFile)
+
+	// replace current workspace.xml with new profile
+	exp := regexp.MustCompile("settings[.]xml[.].[a-zA-Z0-9-_]+")
+	newWorkspace := exp.ReplaceAllString(currWorkspace, "settings.xml."+profile)
+
+	// write new workspace.xml
+	_ = os.WriteFile(".idea/workspace.xml", []byte(newWorkspace), 0644)
+
 }
 
 func isMenvProperty() bool {
@@ -112,7 +171,7 @@ func writeWorkspaceTemplate(profile string) error {
 func isProfileAlreadySet(profile string) bool {
 	file, _ := os.ReadFile(".idea/workspace.xml")
 	workspace := string(file)
-	return strings.Contains(workspace, "settings.xml."+profile)
+	return strings.Contains(workspace, config.Get().MenvRoot+"/settings.xml."+profile)
 }
 
 func init() {
