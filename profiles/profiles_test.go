@@ -315,6 +315,8 @@ func initTest(t *testing.T) {
 		MenvRoot: tempDir,
 		Editor:   "vi",
 	}
+	config.Set(testConfig)
+	config.Init()
 	Init(testConfig)
 	_ = os.Chdir(t.TempDir())
 }
