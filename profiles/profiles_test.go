@@ -210,7 +210,7 @@ func TestActiveNonExistent(t *testing.T) {
 }
 
 func TestEdit(t *testing.T) {
-	TestInit(t)
+	initTest(t)
 	_ = os.Chdir(t.TempDir())
 	_ = Create("test")
 
@@ -241,7 +241,7 @@ func TestEditNonExistent(t *testing.T) {
 }
 
 func TestEditOpts(t *testing.T) {
-	TestInit(t)
+	initTest(t)
 	_ = os.Chdir(t.TempDir())
 	_ = Create("test")
 

@@ -39,7 +39,7 @@ func (m MockShellCommand) Output() ([]byte, error) {
 }
 
 func TestFindMvnNoCellar(t *testing.T) {
-	initTest(t)
+	initMvnTest(t)
 
 	mockShell := MockShellCommand{
 		Mock: &mock.Mock{},
@@ -57,7 +57,7 @@ func TestFindMvnNoCellar(t *testing.T) {
 }
 
 func TestFindMvnCellarNoMvn(t *testing.T) {
-	initTest(t)
+	initMvnTest(t)
 
 	mockShell := MockShellCommand{
 		Mock: &mock.Mock{},
@@ -77,7 +77,7 @@ func TestFindMvnCellarNoMvn(t *testing.T) {
 }
 
 func TestFindMvn(t *testing.T) {
-	initTest(t)
+	initMvnTest(t)
 
 	tempDir := t.TempDir()
 	mvnDir := filepath.Join(tempDir, "maven", "3.9.6", "bin")
@@ -102,7 +102,7 @@ func TestFindMvn(t *testing.T) {
 }
 
 func TestSetMavenOptsNonExistentWithEnv(t *testing.T) {
-	initTest(t)
+	initMvnTest(t)
 
 	expected := "-Xmx2g"
 	_ = os.Setenv("MAVEN_OPTS", expected)
@@ -112,7 +112,7 @@ func TestSetMavenOptsNonExistentWithEnv(t *testing.T) {
 }
 
 func TestSetMavenOptsNonExistentWithoutEnv(t *testing.T) {
-	initTest(t)
+	initMvnTest(t)
 
 	_ = os.Unsetenv("MAVEN_OPTS")
 	actual := setMavenOpts("non_existent")
@@ -120,7 +120,7 @@ func TestSetMavenOptsNonExistentWithoutEnv(t *testing.T) {
 }
 
 func TestSetMavenOpts(t *testing.T) {
-	initTest(t)
+	initMvnTest(t)
 
 	_ = os.Unsetenv("MAVEN_OPTS")
 	expected := "-Xmx2g"
@@ -133,7 +133,7 @@ func TestSetMavenOpts(t *testing.T) {
 }
 
 func TestSetMavenOptsEmpty(t *testing.T) {
-	initTest(t)
+	initMvnTest(t)
 
 	_ = os.Unsetenv("MAVEN_OPTS")
 	profile := "test"
@@ -145,7 +145,7 @@ func TestSetMavenOptsEmpty(t *testing.T) {
 }
 
 func TestExecMvnNoMvn(t *testing.T) {
-	initTest(t)
+	initMvnTest(t)
 
 	mockShell := MockShellCommand{
 		Mock: &mock.Mock{},
@@ -161,7 +161,7 @@ func TestExecMvnNoMvn(t *testing.T) {
 }
 
 func TestExecMvn(t *testing.T) {
-	initTest(t)
+	initMvnTest(t)
 
 	mockShell := MockShellCommand{
 		Mock: &mock.Mock{},
@@ -186,7 +186,7 @@ func TestExecMvn(t *testing.T) {
 	mockShell.AssertExpectations(t)
 }
 
-func initTest(t *testing.T) {
+func initMvnTest(t *testing.T) {
 	tempDir := t.TempDir()
 	testConfig := config.Config{
 		MenvRoot: tempDir,
