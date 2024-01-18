@@ -26,7 +26,7 @@ var mvnCmd = &cobra.Command{
 func execMvn(args []string, shell func(string, ...string) profiles.ShellCommand) {
 	mvnArgs := make([]string, 0)
 	profile, _ := profiles.Active()
-	opts := setMavenOpts(profile)
+	_ = setMavenOpts(profile)
 	if profiles.Exists(profile) {
 		file := profiles.File(profile)
 		mvnArgs = []string{"--settings", file, "--global-settings", file}
@@ -41,7 +41,6 @@ func execMvn(args []string, shell func(string, ...string) profiles.ShellCommand)
 		fmt.Println(err)
 		return
 	}
-	fmt.Printf("[INFO] MAVEN_OPTS: %v\n", opts)
 	cmd := shell(mvn, mvnArgs...)
 
 	cmd.Stdin(os.Stdin)
