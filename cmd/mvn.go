@@ -8,6 +8,7 @@ import (
 	"menv/profiles"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 )
 
@@ -50,8 +51,31 @@ func execMvn(args []string, shell func(string, ...string) profiles.ShellCommand)
 }
 
 func findMaven(shell func(string, ...string) profiles.ShellCommand) (string, error) {
+	env, b := os.LookupEnv("MENV_DISABLE_WRAPPER")
+	var disabled bool
+	if b {
+		parsed, err := strconv.ParseBool(env)
+		if err != nil {
+			return "", errors.New("MENV_DISABLE_WRAPPER is not a boolean value")
+		}
+		disabled = parsed
+	}
 
-	// look for mvn in homebrew
+	_, err := os.Stat("mvnw")
+	wrapperFound := !os.IsNotExist(err)
+
+	if wrapperFound && !disabled {
+		return findMvnWrapper()
+	}
+
+	return findMvnInCellar(shell)
+}
+
+func findMvnWrapper() (string, error) {
+	return filepath.Join(".", "mvnw"), nil
+}
+
+func findMvnInCellar(shell func(string, ...string) profiles.ShellCommand) (string, error) {
 	cmd, _ := shell("brew", "--cellar").Output()
 	cellar := string(cmd)
 	cellar = strings.ReplaceAll(cellar, "\n", "")

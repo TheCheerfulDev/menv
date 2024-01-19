@@ -78,11 +78,9 @@ func TestFindMvnCellarNoMvn(t *testing.T) {
 
 func TestFindMvn(t *testing.T) {
 	initMvnTest(t)
-
 	tempDir := t.TempDir()
 	mvnDir := filepath.Join(tempDir, "maven", "3.9.6", "bin")
 	_ = os.MkdirAll(mvnDir, 0755)
-
 	os.Create(filepath.Join(mvnDir, "mvn"))
 
 	mockShell := MockShellCommand{
@@ -98,6 +96,75 @@ func TestFindMvn(t *testing.T) {
 	actual, err := findMaven(mockProvider)
 	assert.NoError(t, err)
 	assert.Equal(t, filepath.Join(mvnDir, "mvn"), actual)
+	mockShell.AssertExpectations(t)
+}
+
+func TestFindMvnWrapperDisabled(t *testing.T) {
+	initMvnTest(t)
+
+	_ = os.Setenv("MENV_DISABLE_WRAPPER", "true")
+
+	tempDir := t.TempDir()
+	mvnDir := filepath.Join(tempDir, "maven", "3.9.6", "bin")
+	_ = os.MkdirAll(mvnDir, 0755)
+	os.Create(filepath.Join(mvnDir, "mvn"))
+	wrapper := "mvnw"
+	_, _ = os.Create(wrapper)
+
+	mockShell := MockShellCommand{
+		Mock: &mock.Mock{},
+	}
+
+	mockProvider := func(string, ...string) profiles.ShellCommand {
+		return &mockShell
+	}
+
+	mockShell.On("Output").Return([]byte(tempDir), nil)
+
+	actual, err := findMaven(mockProvider)
+	assert.NoError(t, err)
+	assert.Equal(t, filepath.Join(mvnDir, "mvn"), actual)
+	mockShell.AssertExpectations(t)
+}
+
+func TestFindMvnWithWrapper(t *testing.T) {
+	_ = os.Unsetenv("MENV_DISABLE_WRAPPER")
+	initMvnTest(t)
+
+	tempDir := t.TempDir()
+	_ = os.Chdir(tempDir)
+	wrapper := "mvnw"
+	_, _ = os.Create(wrapper)
+
+	mockShell := MockShellCommand{
+		Mock: &mock.Mock{},
+	}
+
+	mockProvider := func(string, ...string) profiles.ShellCommand {
+		return &mockShell
+	}
+
+	actual, err := findMaven(mockProvider)
+	assert.NoError(t, err)
+	assert.Equal(t, filepath.Join(".", "mvnw"), actual)
+	mockShell.AssertExpectations(t)
+}
+
+func TestFindMavenInvalidEnv(t *testing.T) {
+	initMvnTest(t)
+
+	_ = os.Setenv("MENV_DISABLE_WRAPPER", "invalid")
+
+	mockShell := MockShellCommand{
+		Mock: &mock.Mock{},
+	}
+
+	mockProvider := func(string, ...string) profiles.ShellCommand {
+		return &mockShell
+	}
+
+	_, err := findMaven(mockProvider)
+	assert.EqualError(t, err, "MENV_DISABLE_WRAPPER is not a boolean value")
 	mockShell.AssertExpectations(t)
 }
 
@@ -163,6 +230,9 @@ func TestExecMvnNoMvn(t *testing.T) {
 func TestExecMvn(t *testing.T) {
 	initMvnTest(t)
 
+	_ = profiles.Create("test")
+	_ = profiles.Set("test")
+
 	mockShell := MockShellCommand{
 		Mock: &mock.Mock{},
 	}
@@ -187,6 +257,7 @@ func TestExecMvn(t *testing.T) {
 }
 
 func initMvnTest(t *testing.T) {
+	_ = os.Unsetenv("MENV_DISABLE_WRAPPER")
 	tempDir := t.TempDir()
 	testConfig := config.Config{
 		MenvRoot: tempDir,

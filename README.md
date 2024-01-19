@@ -25,6 +25,7 @@ menv --help
 ## Environment variables
 
 * MENV_EDITOR: The editor to use for editing the maven settings.xml file. Default: vi
+* MENV_DISABLE_WRAPPER: If set to true, the maven wrapper will not be used. Default: false
 
 ## Create and use a new profile workflow
 
@@ -51,3 +52,8 @@ menv editopts <profile-name>
 ```bash
 menv set <profile-name>
 ```
+
+# Special thanks
+
+* [IvoNet](https://github.com/IvoNet) for creating the original version of this tool, and pushing me to rewrite it
+  in Go!
