@@ -144,9 +144,10 @@ func TestFindMvnWithWrapper(t *testing.T) {
 		return &mockShell
 	}
 
+	expected := "./mvnw"
 	actual, err := findMaven(mockProvider)
 	assert.NoError(t, err)
-	assert.Equal(t, filepath.Join(".", "mvnw"), actual)
+	assert.Equal(t, expected, actual)
 	mockShell.AssertExpectations(t)
 }
 
@@ -254,6 +255,13 @@ func TestExecMvn(t *testing.T) {
 	mockShell.On("Run").Return(nil)
 	execMvn([]string{}, mockProvider)
 	mockShell.AssertExpectations(t)
+}
+
+func TestFindMvnWrapper(t *testing.T) {
+	wrapper, err := findMvnWrapper()
+
+	assert.NoError(t, err)
+	assert.Equal(t, "./mvnw", wrapper)
 }
 
 func initMvnTest(t *testing.T) {

@@ -72,7 +72,7 @@ func findMaven(shell func(string, ...string) profiles.ShellCommand) (string, err
 }
 
 func findMvnWrapper() (string, error) {
-	return filepath.Join(".", "mvnw"), nil
+	return "./mvnw", nil
 }
 
 func findMvnInCellar(shell func(string, ...string) profiles.ShellCommand) (string, error) {
