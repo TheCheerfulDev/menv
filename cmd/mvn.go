@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"github.com/spf13/cobra"
 	"io/fs"
+	"menv/color"
+	"menv/config"
 	"menv/profiles"
 	"os"
 	"path/filepath"
@@ -27,7 +29,7 @@ var mvnCmd = &cobra.Command{
 func execMvn(args []string, shell func(string, ...string) profiles.ShellCommand) {
 	mvnArgs := make([]string, 0)
 	profile, _ := profiles.Active()
-	_ = setMavenOpts(profile)
+	opts := setMavenOpts(profile)
 	if profiles.Exists(profile) {
 		file := profiles.File(profile)
 		mvnArgs = []string{"--settings", file, "--global-settings", file}
@@ -47,6 +49,7 @@ func execMvn(args []string, shell func(string, ...string) profiles.ShellCommand)
 	cmd.Stdin(os.Stdin)
 	cmd.Stdout(os.Stdout)
 	cmd.Stderr(os.Stderr)
+	printProfile(profile, opts)
 	_ = cmd.Run()
 }
 
@@ -121,6 +124,33 @@ func setMavenOpts(profile string) string {
 	}
 
 	return ""
+}
+
+func printProfile(profile, opts string) {
+	profiles.Profiles()
+	if !config.Verbose() {
+		return
+	}
+
+	if profiles.Exists(profile) {
+		fmt.Print("[")
+		fmt.Print(color.Format(color.BLUE, "MENV"))
+		fmt.Print("] Using profile [")
+		fmt.Print(color.Format(color.GREEN, profile))
+		fmt.Print("] ")
+	} else {
+		fmt.Print("[")
+		fmt.Print(color.Format(color.BLUE, "MENV"))
+		fmt.Print("] Using profile [")
+		fmt.Print(color.Format(color.GREEN, "system default"))
+		fmt.Print("] ")
+	}
+	if opts != "" {
+		fmt.Print("with MAVEN_OPTS [")
+		fmt.Print(color.Format(color.GREEN, opts))
+		fmt.Print("]")
+	}
+	fmt.Println()
 }
 
 func init() {

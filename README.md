@@ -26,6 +26,7 @@ menv --help
 
 * MENV_EDITOR: The editor to use for editing the maven settings.xml file. Default: vi
 * MENV_DISABLE_WRAPPER: If set to true, the maven wrapper will not be used. Default: false
+* MENV_VERBOSE: If set to true, menv will print the active profile with every mvn execution. Default: false
 
 ## Create and use a new profile workflow
 

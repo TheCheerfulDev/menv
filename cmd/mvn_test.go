@@ -271,6 +271,8 @@ func initMvnTest(t *testing.T) {
 		MenvRoot: tempDir,
 		Editor:   "vi",
 	}
+	config.Set(testConfig)
+	_ = config.Init()
 	profiles.Init(testConfig)
 	_ = os.Chdir(t.TempDir())
 }

@@ -316,7 +316,7 @@ func initTest(t *testing.T) {
 		Editor:   "vi",
 	}
 	config.Set(testConfig)
-	config.Init()
+	_ = config.Init()
 	Init(testConfig)
 	_ = os.Chdir(t.TempDir())
 }

@@ -4,6 +4,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"os"
 	"path/filepath"
+	"strconv"
 	"testing"
 )
 
@@ -46,6 +47,28 @@ func TestSetGet(t *testing.T) {
 	actual := Get()
 
 	assert.Equal(t, expected, actual)
+}
+
+func TestVerbose(t *testing.T) {
+	tests := []struct {
+		verbose string
+		fn      func(string)
+	}{
+		{"false", func(s string) {}},
+		{"true", func(s string) {
+			os.Setenv("MENV_VERBOSE", s)
+		}},
+	}
+	defer os.Unsetenv("MENV_VERBOSE")
+	cfg := Default()
+	Set(cfg)
+
+	for _, test := range tests {
+		test.fn(test.verbose)
+		expected, _ := strconv.ParseBool(test.verbose)
+		actual := Verbose()
+		assert.Equal(t, expected, actual)
+	}
 }
 
 func TestInit(t *testing.T) {
