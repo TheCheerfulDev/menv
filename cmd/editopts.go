@@ -8,9 +8,10 @@ import (
 
 // editCmd represents the edit command
 var editoptsCmd = &cobra.Command{
-	Use:   "editopts [profile]",
-	Args:  cobra.MaximumNArgs(1),
-	Short: "Edit MAVEN_OPTS of the provided profile, or the active profile if none is provided, or prompt for a profile if none is active",
+	Use:               "editopts [profile]",
+	Args:              cobra.MaximumNArgs(1),
+	ValidArgsFunction: profiles.CustomProfileCompletion,
+	Short:             "Edit MAVEN_OPTS of the provided profile, or the active profile if none is provided, or prompt for a profile if none is active",
 	Long: `With this command you can edit the MAVEN_OPTS of a profile. By default it will open the profile in vi.
 
 If the profile has no MAVEN_OPTS set, maven will use the MAVEN_OPTS from the environment.

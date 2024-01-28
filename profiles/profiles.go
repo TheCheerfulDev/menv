@@ -3,6 +3,7 @@ package profiles
 import (
 	"errors"
 	"fmt"
+	"github.com/spf13/cobra"
 	"io"
 	"menv/config"
 	"os"
@@ -190,6 +191,15 @@ func File(profile string) string {
 
 func OptsFile(profile string) string {
 	return cfg.MenvRoot + "/" + profile + ".maven_opts"
+}
+
+func CustomProfileCompletion(_ *cobra.Command, args []string, _ string) ([]string, cobra.ShellCompDirective) {
+
+	if len(args) > 0 {
+		return nil, cobra.ShellCompDirectiveNoFileComp
+	}
+
+	return Profiles(), cobra.ShellCompDirectiveNoFileComp
 }
 
 func ExecCmdProvider(command string, args ...string) ShellCommand {
