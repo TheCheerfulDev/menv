@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -8,9 +9,10 @@ import (
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "menv",
-	Short: "Maven Environment Manager",
-	Long:  `menv is a tool to manage maven profiles for a given folder and its children.`,
+	Use:     "menv",
+	Short:   "Maven Environment Manager",
+	Long:    `menv is a tool to manage maven profiles for a given folder and its children.`,
+	Version: "0.9.0",
 }
 
 func Execute() {
@@ -21,13 +23,5 @@ func Execute() {
 }
 
 func init() {
-	// Here you will define your flags and configuration settings.
-	// Cobra supports persistent flags, which, if defined here,
-	// will be global for your application.
-
-	// rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.menv.yaml)")
-
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
-	//rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	rootCmd.SetVersionTemplate(fmt.Sprintf("menv version %s - © Mark Hendriks <thecheerfuldev>\n", rootCmd.Version))
 }
