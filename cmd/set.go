@@ -27,6 +27,7 @@ var setCmd = &cobra.Command{
 				fmt.Println(err)
 				return
 			}
+			return
 		}
 		profile := args[0]
 		err := setProfile(profile)
