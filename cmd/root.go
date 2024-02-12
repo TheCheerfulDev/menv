@@ -12,7 +12,7 @@ var rootCmd = &cobra.Command{
 	Use:     "menv",
 	Short:   "Maven Environment Manager",
 	Long:    `menv is a tool to manage maven profiles for a given folder and its children.`,
-	Version: "0.9.1",
+	Version: "0.9.2",
 }
 
 func Execute() {
